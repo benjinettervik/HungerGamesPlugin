@@ -1,3 +1,3 @@
 # HungerGamesPlugin
 
-epic sexx
+most epic HG plugin
