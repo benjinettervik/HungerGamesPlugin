@@ -1,0 +1,20 @@
+main: com.benjnet.hungergames.Main
+name: HungerGames
+version: 1.0
+
+commands:
+  hg:
+    description: type /hg help
+    usage: /hg help
+  a:
+    description:  accept team invite
+    usage: /a test
+  d:
+    description: decline team invite
+    usage: /d test
+  scoreboard:
+    description: toggle scoreboard
+    usage: /scoreboard
+  ready:
+    description: ready
+    usage: /ready
