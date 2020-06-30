@@ -1,13 +1,15 @@
 main: com.benjnet.hungergames.Main
 name: HungerGames
-version: 1.0
+version: "1.0"
+depend: [Multiverse-Core, Multiverse-NetherPortals]
+api-version: "1.15"
 
 commands:
   hg:
     description: type /hg help
     usage: /hg help
   a:
-    description:  accept team invite
+    description: accept team invite
     usage: /a test
   d:
     description: decline team invite

@@ -13,9 +13,9 @@ import java.util.Set;
 
 public class HGScoreboardManager{
     Main main;
-
     ScoreboardManager sm;
     Scoreboard board;
+
     Objective objMatch;
 
     int matchTimeSeconds;

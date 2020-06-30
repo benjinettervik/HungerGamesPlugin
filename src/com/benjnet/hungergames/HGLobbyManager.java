@@ -1,5 +1,6 @@
 package com.benjnet.hungergames;
 
+import com.onarandombox.MultiverseCore.MultiverseCore;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.*;
 import org.bukkit.event.EventHandler;
@@ -8,6 +9,8 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.PluginManager;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -16,6 +19,7 @@ import java.util.Random;
 
 public class HGLobbyManager implements Listener {
     Main main;
+    MultiverseCore core;
 
     public boolean gameIsStarted;
     Location spawn;
@@ -23,7 +27,7 @@ public class HGLobbyManager implements Listener {
     //in seconds
     public int matchTime = 0 * 60;
     public int invincibilityTime = 0 * 60;
-    public int roamingTime = 0 * 60;
+    public int roamingTime = 1 * 60;
     public int radius = 50;
     public int zoneDamageIntensity = 1;
     int countdownTimer = 4;
@@ -43,12 +47,15 @@ public class HGLobbyManager implements Listener {
     public HGLobbyManager(Main _main) {
         main = _main;
 
+        //using Multiverse to create worlds, because its a pain to manually link nether worlds
+        core = (MultiverseCore) Bukkit.getServer().getPluginManager().getPlugin("Multiverse-Core");;
+
         welcomeBook = CreateWelcomeBook();
     }
 
     @EventHandler
     void FoodLevelChangeEvent(FoodLevelChangeEvent e) {
-        if (gameIsStarted) {
+        if (!gameIsStarted) {
             e.setCancelled(true);
         }
     }
@@ -56,7 +63,7 @@ public class HGLobbyManager implements Listener {
     @EventHandler
     void OnBlockBreak(BlockBreakEvent e) {
         if (e.getPlayer() != null) {
-            if (e.getPlayer().getGameMode() == GameMode.SURVIVAL && e.getPlayer().getWorld().getName().equalsIgnoreCase("world")) {
+            if (e.getPlayer().getGameMode() == GameMode.SURVIVAL && !gameIsStarted) {
                 e.setCancelled(true);
             }
         }
@@ -160,16 +167,10 @@ public class HGLobbyManager implements Listener {
         Random rand = new Random();
         String worldName = "HGWorld" + rand.nextInt(10000);
 
-        WorldCreator wcNormal = new WorldCreator(worldName);
-        wcNormal.environment(World.Environment.NORMAL);
-        wcNormal.type(WorldType.NORMAL);
-        wcNormal.createWorld();
-        World hgWorld = Bukkit.getWorld(worldName);
+        core.getMVWorldManager().addWorld(worldName, World.Environment.NORMAL, null, WorldType.NORMAL, false, null, false);
+        core.getMVWorldManager().addWorld(worldName + "_nether", World.Environment.NETHER, null, WorldType.NORMAL, false, null, false);
 
-        WorldCreator wcNether = new WorldCreator(worldName + "_nether");
-        wcNether.environment(World.Environment.NETHER);
-        wcNether.type(WorldType.NORMAL);
-        wcNether.createWorld();
+        World hgWorld = Bukkit.getWorld(worldName);
 
         countdown = new BukkitRunnable() {
             @Override
@@ -184,10 +185,11 @@ public class HGLobbyManager implements Listener {
                     gameIsStarted = true;
 
                     main.hgScoreboardManager.UpdateScoreBoardMatch();
+                    main.hgScoreboardManager.UpdateScoreBoardMatch();
                     Bukkit.getServer().getScheduler().cancelTask(countdown.getTaskId());
                 }
             }
-        }.runTaskTimer(Bukkit.getPluginManager().getPlugin("HungerGames"), 0, 20);
+        }.runTaskTimer(main.plugin, 0, 20);
     }
 
     void CancelTask() {
@@ -203,6 +205,6 @@ public class HGLobbyManager implements Listener {
         //
         main.hgScoreboardManager.UpdateScoreboardLobby();
         countdownTimer = 4;
-        Bukkit.getScheduler().cancelAllTasks();
+        Bukkit.getScheduler().cancelTasks(main.plugin);
     }
 }

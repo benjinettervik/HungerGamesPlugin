@@ -3,6 +3,7 @@ package com.benjnet.hungergames;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -16,7 +17,6 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.FireworkMeta;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -25,9 +25,6 @@ import java.util.List;
 import java.util.Random;
 
 public class HGMatch implements Listener {
-
-    Plugin plugin;
-
     Main main;
     List<HGPlayer> hgPlayers;
     List<HGTeam> hgTeams;
@@ -44,6 +41,7 @@ public class HGMatch implements Listener {
     int invincibilityTime;
     int matchTime;
     int fightPeriodElapsedTime;
+    int invincibilityElapsedTime;
     int radius;
     int zoneDamageIntensity;
     int postMatchTime;
@@ -82,12 +80,9 @@ public class HGMatch implements Listener {
         fireBlocks = new ArrayList<Block>();
         unlitFireBlocks = new ArrayList<Block>();
 
-        int test = hgWorld.getHighestBlockAt(0, 0).getY();
         main.pm.registerEvents(this, main);
 
-        plugin = main.getServer().getPluginManager().getPlugin("HungerGames");
-
-        hgWorld.setGameRuleValue("doFireTick", "false");
+        hgWorld.setGameRule(GameRule.DO_FIRE_TICK, false);
 
         Setup();
     }
@@ -120,6 +115,10 @@ public class HGMatch implements Listener {
 
     @EventHandler
     void OnBlockPlace(BlockPlaceEvent e) {
+        if(matchStage == HGLobbyManager.Stage.ROAMING){
+            e.setCancelled(true);
+        }
+
         Location loc = e.getBlock().getLocation();
         if (Math.abs(loc.getX()) < 2 && Math.abs(loc.getZ()) < 2) {
             e.setCancelled(true);
@@ -202,6 +201,14 @@ public class HGMatch implements Listener {
 
         HGPlayer hgPlayer = main.hgPlayersManager.FindHGPlayer((Player) e.getEntity());
 
+        if(matchStage == HGLobbyManager.Stage.ROAMING){
+            e.setCancelled(true);
+        }
+
+        else if(matchStage == HGLobbyManager.Stage.INVINCIBILITY && invincibilityElapsedTime < 5){
+            e.setCancelled(true);
+        }
+
         double health = hgPlayer.player.getHealth() - e.getFinalDamage();
         if (health < 0.5 && hgPlayer.isAlive) {
             OnPlayerDeathOrLeave(hgPlayer);
@@ -218,7 +225,7 @@ public class HGMatch implements Listener {
         worldSpawnLocation = new Location(hgWorld, 0, hgWorld.getHighestBlockAt(0, 0).getY(), 0);
         for (int i = 0; i < 100; i++) {
             Block spawnBlock = worldSpawnLocation.clone().add(0, -1, 0).getBlock();
-            if (spawnBlock.getType() == Material.WATER || spawnBlock.getType() == Material.STATIONARY_WATER) {
+            if (spawnBlock.getType() == Material.WATER) {
                 Random rand = new Random();
                 worldSpawnLocation.add(rand.nextInt(300), 0, rand.nextInt(250));
             } else {
@@ -249,9 +256,13 @@ public class HGMatch implements Listener {
             player.setHealth(20);
             player.setFoodLevel(20);
 
+            //if any player would be invisible
+            for (HGPlayer visiblePlayer : hgPlayers) {
+                player.showPlayer(main.plugin, visiblePlayer.player);
+            }
+
             hgPlayer.isAlive = true;
             hgPlayer.isInGame = true;
-
         }
 
         CreateBeacon();
@@ -274,7 +285,7 @@ public class HGMatch implements Listener {
                     InvincibilityPeriod();
                 }
             }
-        }.runTaskTimer(Bukkit.getPluginManager().getPlugin("HungerGames"), 0, 20);
+        }.runTaskTimer(main.plugin, 0, 20);
     }
 
     void InvincibilityPeriod() {
@@ -294,13 +305,14 @@ public class HGMatch implements Listener {
             @Override
             public void run() {
                 invincibilityTime--;
+                invincibilityElapsedTime++;
                 main.hgScoreboardManager.SetScoreboardTimer(matchStage, invincibilityTime);
 
                 if (invincibilityTime <= 0) {
                     MatchPeriod();
                 }
             }
-        }.runTaskTimer(Bukkit.getPluginManager().getPlugin("HungerGames"), 0, 20);
+        }.runTaskTimer(main.plugin, 0, 20);
 
     }
 
@@ -332,7 +344,7 @@ public class HGMatch implements Listener {
                     fiveMinWarning = true;
                 }
             }
-        }.runTaskTimer(plugin, 0, 20);
+        }.runTaskTimer(main.plugin, 0, 20);
     }
 
     void FightPeriod() {
@@ -349,7 +361,7 @@ public class HGMatch implements Listener {
                 fightPeriodElapsedTime++;
                 main.hgScoreboardManager.SetScoreboardTimer(matchStage, fightPeriodElapsedTime);
             }
-        }.runTaskTimer(plugin, 0, 20);
+        }.runTaskTimer(main.plugin, 0, 20);
 
         fightPeriodTask = new BukkitRunnable() {
             @Override
@@ -359,7 +371,7 @@ public class HGMatch implements Listener {
                     CreateDangerzone(radius, true);
                 }
             }
-        }.runTaskTimer(plugin, 700, 700);
+        }.runTaskTimer(main.plugin, 700, 700);
     }
 
     void CreateBeacon() {
@@ -421,13 +433,19 @@ public class HGMatch implements Listener {
                     Bukkit.getServer().getScheduler().cancelTask(createFireTask.getTaskId());
                 }
             }
-        }.runTaskTimer(plugin, 0, 1);
+        }.runTaskTimer(main.plugin, 0, 1);
     }
 
     void SetBlockAtSurface(Location loc) {
         Block block = loc.getWorld().getHighestBlockAt((int) loc.getX(), (int) loc.getZ());
         for (int i = 0; i < 30; i++) {
-            if (block.getType() != Material.LEAVES && block.getType() != Material.AIR && block.getType() != Material.LOG && block.getType() != Material.LEAVES_2 && block.getType() != Material.LONG_GRASS) {
+            if (!block.getType().toString().toLowerCase().contains("leaves") &&
+                    !block.getType().toString().toLowerCase().contains("log") &&
+                    !block.getType().toString().toLowerCase().contains("air") &&
+                    !block.getType().toString().toLowerCase().contains("fern") &&
+                    block.getType() != Material.GRASS &&
+                    block.getType() != Material.TALL_GRASS)
+            {
                 block.setType(Material.NETHERRACK);
                 netherrackBlocks.add(block);
                 Block fireBlock = block.getRelative(BlockFace.UP);
@@ -452,7 +470,7 @@ public class HGMatch implements Listener {
                         double xDistance = Math.abs(player.getLocation().getX() - worldSpawnLocation.getX());
                         double zDistance = Math.abs(player.getLocation().getZ() - worldSpawnLocation.getZ());
 
-                        if (xDistance > radius || zDistance > radius) {
+                        if (xDistance > radius || zDistance > radius || hgPlayer.player.getWorld().getEnvironment() == World.Environment.NETHER) {
                             if (hgPlayer.player.getHealth() > 0.5) {
                                 hgPlayer.player.damage(0.5);
                             } else {
@@ -462,7 +480,7 @@ public class HGMatch implements Listener {
                     }
                 }
             }
-        }.runTaskTimer(plugin, 0, 10);
+        }.runTaskTimer(main.plugin, 0, 10);
     }
 
     void FinishGame(HGTeam winnerTeam) {
@@ -470,7 +488,6 @@ public class HGMatch implements Listener {
         finishGameTask = new BukkitRunnable() {
             @Override
             public void run() {
-
                 postMatchTime++;
 
                 Bukkit.broadcastMessage(ChatColor.AQUA + "" + ChatColor.BOLD + winnerTeam.name + ChatColor.GOLD + " is the winner!");
@@ -486,7 +503,7 @@ public class HGMatch implements Listener {
                         hgPlayer.player.teleport(main.hgLobbyManager.spawn);
 
                         for (HGPlayer visiblePlayer : hgPlayers) {
-                            hgPlayer.player.showPlayer(visiblePlayer.player);
+                            hgPlayer.player.showPlayer(main.plugin, visiblePlayer.player);
                         }
 
                         hgPlayer.player.setGameMode(GameMode.SURVIVAL);
@@ -495,7 +512,7 @@ public class HGMatch implements Listener {
                     }
                 }
             }
-        }.runTaskTimer(plugin, 0, 20);
+        }.runTaskTimer(main.plugin, 0, 20);
 
         for (HGPlayer hgPlayer : winnerTeam.hgPlayersInTeam) {
             GenerateFirework(hgPlayer.player);
@@ -508,13 +525,11 @@ public class HGMatch implements Listener {
             public void run() {
                 Firework fw = (Firework) player.getLocation().getWorld().spawn(player.getLocation(), Firework.class);
                 FireworkMeta fm = fw.getFireworkMeta();
-
                 fm.addEffect(FireworkEffect.builder().flicker(true).trail(true).with(FireworkEffect.Type.BALL_LARGE).withColor(RandomColor()).withFade(RandomColor()).build());
                 fm.setPower(3);
                 fw.setFireworkMeta(fm);
             }
-        }.runTaskTimer(plugin, 0, 5);
-
+        }.runTaskTimer(main.plugin, 0, 5);
     }
 
     Color RandomColor() {
@@ -570,7 +585,7 @@ public class HGMatch implements Listener {
         }
 
         for (HGPlayer _hgPlayer : hgPlayers) {
-            _hgPlayer.player.hidePlayer(hgPlayer.player);
+            _hgPlayer.player.hidePlayer(main.plugin, hgPlayer.player);
         }
 
         if (aliveTeams.size() == 1) {
