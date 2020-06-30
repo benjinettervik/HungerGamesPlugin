@@ -76,7 +76,7 @@ public class HGPlayersManager implements Listener, CommandExecutor {
         player.getInventory().clear();
         player.setGameMode(GameMode.SURVIVAL);
         player.setFoodLevel(20);
-        //player.teleport(new Location(Bukkit.getWorld("world"), 742, 100, -910));
+        main.hgLobbyManager.teleportToSpawn(player);
         main.hgLobbyManager.giveWelcomeBook(findHGPlayer(player));
     }
 

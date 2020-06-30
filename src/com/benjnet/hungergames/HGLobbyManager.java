@@ -3,10 +3,13 @@ package com.benjnet.hungergames;
 import com.onarandombox.MultiverseCore.MultiverseCore;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.*;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntitySpawnEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
@@ -47,7 +50,7 @@ public class HGLobbyManager implements Listener {
         main = _main;
 
         //using Multiverse to create worlds, because its a pain to manually link nether worlds
-        core = (MultiverseCore) Bukkit.getServer().getPluginManager().getPlugin("Multiverse-Core");;
+        core = (MultiverseCore) Bukkit.getServer().getPluginManager().getPlugin("Multiverse-Core");
 
         welcomeBook = createWelcomeBook();
     }
@@ -69,7 +72,14 @@ public class HGLobbyManager implements Listener {
     }
 
     @EventHandler
-    void onPlayerDamage(EntityDamageEvent e){
+    void onPlayerDamage(EntityDamageEvent e) {
+        if (!gameIsStarted && e.getEntityType() == EntityType.PLAYER) {
+            e.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    void onMobSpawn(EntitySpawnEvent e){
         if(!gameIsStarted){
             e.setCancelled(true);
         }
@@ -87,14 +97,12 @@ public class HGLobbyManager implements Listener {
                 } else if (args[0].equalsIgnoreCase("safetime")) {
                     invincibilityTime = seconds;
                     main.getServer().broadcastMessage(ChatColor.GREEN + "Invincibility time has been set to " + invincibilityTime / 60 + " minutes.");
-
                 } else if (args[0].equalsIgnoreCase("roamingtime")) {
                     roamingTime = seconds;
                     main.getServer().broadcastMessage(ChatColor.GREEN + "Roaming time has been set to " + roamingTime / 60 + " minutes.");
                 } else if (args[0].equalsIgnoreCase("radius")) {
                     radius = value;
                     main.getServer().broadcastMessage(ChatColor.GREEN + "Radius time has been set to " + value + " blocks");
-                }
 
                 main.hgScoreboardManager.updateScoreboardLobby();
             }
@@ -110,9 +118,10 @@ public class HGLobbyManager implements Listener {
             main.hgScoreboardManager.updateScoreboardLobby();
         }
 
-        if (args[0].equalsIgnoreCase("spawn")) {
-            senderHgPlayer.player.teleport(new Location(Bukkit.getWorld("world"), 745, 100, -910));
-            senderHgPlayer.player.setHealth(20);
+        } else if (args[0].equalsIgnoreCase("setspawn")) {
+            main.pluginConfig.setSpawn(senderHgPlayer.player);
+        } else if (args[0].equalsIgnoreCase("spawn")) {
+            teleportToSpawn(senderHgPlayer.player);
         }
     }
 
@@ -212,5 +221,18 @@ public class HGLobbyManager implements Listener {
         main.hgScoreboardManager.updateScoreboardLobby();
         countdownTimer = 4;
         Bukkit.getScheduler().cancelTasks(main.plugin);
+    }
+
+    public void teleportToSpawn(Player player){
+        if (main.pluginConfig.config.get("spawn") != null) {
+            player.teleport(new Location(
+                    Bukkit.getWorld(main.pluginConfig.config.getString("spawn.world")),
+                    main.pluginConfig.config.getInt("spawn.x"),
+                    main.pluginConfig.config.getInt("spawn.y"),
+                    main.pluginConfig.config.getInt("spawn.z"),
+                    (float)main.pluginConfig.config.getDouble("spawn.yaw"),
+                    (float)main.pluginConfig.config.getDouble("spawn.pitch")
+            ));
+        }
     }
 }
