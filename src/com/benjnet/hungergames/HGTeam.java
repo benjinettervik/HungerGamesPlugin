@@ -25,12 +25,12 @@ public class HGTeam {
 
         //do not want to send join message to player, adding manually
         _owner.team = this;
-        AddPlayer(_owner);
+        addPlayer(_owner);
 
         owner.player.sendMessage(ChatColor.GREEN + "Team " + ChatColor.AQUA + ChatColor.BOLD + name + ChatColor.GREEN + " has been created!");
     }
 
-    public void AddPlayer(HGPlayer hgPlayer) {
+    public void addPlayer(HGPlayer hgPlayer) {
 
         for (HGPlayer hgPlayerInTeam : hgPlayersInTeam) {
             hgPlayerInTeam.player.sendMessage("" + ChatColor.AQUA + ChatColor.BOLD + hgPlayer.name + ChatColor.GREEN + " has joined your team!");
@@ -43,10 +43,10 @@ public class HGTeam {
             hgPlayer.player.sendMessage(ChatColor.GREEN + "You have joined " + ChatColor.AQUA + ChatColor.BOLD + name + ChatColor.GREEN + ".");
         }
 
-        main.hgScoreboardManager.UpdateScoreboardLobby();
+        main.hgScoreboardManager.updateScoreboardLobby();
     }
 
-    public void RemovePlayer(HGPlayer hgPlayer) {
+    public void removePlayer(HGPlayer hgPlayer) {
         hgPlayersInTeam.remove(hgPlayer);
         hgPlayer.team = null;
         hgPlayer.player.sendMessage(ChatColor.RED + "You have left " + ChatColor.AQUA + ChatColor.BOLD + name + ChatColor.RED + ".");
@@ -60,10 +60,10 @@ public class HGTeam {
             main.hgTeamsManager.hgTeams.remove(this);
         }
 
-        main.hgScoreboardManager.UpdateScoreboardLobby();
+        main.hgScoreboardManager.updateScoreboardLobby();
     }
 
-    public void InvitePlayer(HGPlayer sender, HGPlayer receiver) {
+    public void invitePlayer(HGPlayer sender, HGPlayer receiver) {
         if (receiver == null) {
             sender.player.sendMessage(ChatColor.RED + "Player is not online.");
             return;
@@ -86,7 +86,7 @@ public class HGTeam {
         receiver.pendingInviter = sender;
     }
 
-    public void Info(HGPlayer hgPlayer) {
+    public void info(HGPlayer hgPlayer) {
         hgPlayer.player.sendMessage("");
         hgPlayer.player.sendMessage("" + ChatColor.YELLOW + ChatColor.BOLD + "Owner: " + ChatColor.AQUA + owner.player.getName());
         hgPlayer.player.sendMessage("");
@@ -97,7 +97,7 @@ public class HGTeam {
         }
     }
 
-    public Boolean IsTeamDead(){
+    public Boolean isTeamDead(){
         for (HGPlayer hgPlayer: hgPlayersInTeam) {
             if(hgPlayer.isAlive){
                 return false;

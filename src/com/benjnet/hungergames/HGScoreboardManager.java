@@ -2,10 +2,6 @@ package com.benjnet.hungergames;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.*;
 
@@ -23,7 +19,11 @@ public class HGScoreboardManager{
     int roamingTimeSeconds;
     int radius;
 
-    public void OnCommand(String[] args, HGPlayer senderHgPlayer) {
+    public HGScoreboardManager(Main _main) {
+        main = _main;
+    }
+
+    public void onCommand(String[] args, HGPlayer senderHgPlayer) {
         if (args.length < 2) {
             if (senderHgPlayer.enableScoreBoard) {
                 senderHgPlayer.player.setScoreboard(sm.getNewScoreboard());
@@ -35,11 +35,7 @@ public class HGScoreboardManager{
         }
     }
 
-    public HGScoreboardManager(Main _main) {
-        main = _main;
-    }
-
-    public void UpdateScoreboardLobby() {
+    public void updateScoreboardLobby() {
         if (main.hgLobbyManager.gameIsStarted) {
             return;
         }
@@ -100,7 +96,7 @@ public class HGScoreboardManager{
         objMatch.getScore(ChatColor.RED + "=======================").setScore(indexCount);
     }
 
-    public void UpdateScoreBoardMatch() {
+    public void updateScoreBoardMatch() {
         Set<String> scores = board.getEntries();
         for (String score : scores) {
             board.resetScores(score);
@@ -117,7 +113,7 @@ public class HGScoreboardManager{
         int index = indexCount;
         for (HGTeam hgTeam : main.hgTeamsManager.hgTeams) {
             index--;
-            if (hgTeam.IsTeamDead()) {
+            if (hgTeam.isTeamDead()) {
                 Score team = objMatch.getScore(ChatColor.GRAY + "" + ChatColor.BOLD + hgTeam.name);
                 team.setScore(index);
             } else {
@@ -137,22 +133,22 @@ public class HGScoreboardManager{
         }
     }
 
-    void SetupScoreboard() {
+    void setupScoreboard() {
         sm = Bukkit.getScoreboardManager();
         board = sm.getNewScoreboard();
         objMatch = board.registerNewObjective("HGSTATS", "dummy");
         objMatch.setDisplaySlot(DisplaySlot.SIDEBAR);
 
-        UpdateScoreboardLobby();
+        updateScoreboardLobby();
 
         if (main.hgLobbyManager.gameIsStarted) {
-            SetCountdownScheduler();
+            setCountdownScheduler();
         }
     }
 
     int timer = 60;
 
-    void SetCountdownScheduler() {
+    void setCountdownScheduler() {
         new BukkitRunnable() {
             @Override
             public void run() {
@@ -166,7 +162,7 @@ public class HGScoreboardManager{
         }.runTaskTimer(Bukkit.getPluginManager().getPlugin("HungerGames"), 20, 20);
     }
 
-    public void SetScoreboardTimer(HGLobbyManager.Stage stage, int timer) {
+    public void setScoreboardTimer(HGLobbyManager.Stage stage, int timer) {
         int minutes = timer / 60;
         int seconds = timer % 60;
 

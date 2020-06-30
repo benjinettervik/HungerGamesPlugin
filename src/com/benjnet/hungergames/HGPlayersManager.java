@@ -1,9 +1,7 @@
 package com.benjnet.hungergames;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
-import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -11,7 +9,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.plugin.Plugin;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,20 +32,20 @@ public class HGPlayersManager implements Listener, CommandExecutor {
 
         Player sender = (Player) commandSender;
 
-        if (main.hgPlayersManager.FindHGPlayer(sender) == null) {
+        if (main.hgPlayersManager.findHGPlayer(sender) == null) {
             return false;
         }
 
-        HGPlayer senderHgPlayer = main.hgPlayersManager.FindHGPlayer(sender);
+        HGPlayer senderHgPlayer = main.hgPlayersManager.findHGPlayer(sender);
 
         System.out.println(senderHgPlayer.pendingInvite);
 
         if (command.getName().equalsIgnoreCase("a") || command.getName().equalsIgnoreCase("d")) {
             if (senderHgPlayer.pendingInvite != null) {
                 if (command.getName().equalsIgnoreCase("a")) {
-                    senderHgPlayer.TeamInviteResponse(true);
+                    senderHgPlayer.teamInviteResponse(true);
                 } else if (command.getName().equalsIgnoreCase("d")) {
-                    senderHgPlayer.TeamInviteResponse(false);
+                    senderHgPlayer.teamInviteResponse(false);
                 }
             } else {
                 senderHgPlayer.player.sendMessage(ChatColor.RED + "You have no pending invite.");
@@ -60,8 +57,8 @@ public class HGPlayersManager implements Listener, CommandExecutor {
                 senderHgPlayer.player.sendMessage(ChatColor.RED + "You must be in a team to ready up.");
                 return true;
             }
-            senderHgPlayer.SetReadyStatus(!senderHgPlayer.ready);
-            main.hgLobbyManager.StartGame();
+            senderHgPlayer.setReadyStatus(!senderHgPlayer.ready);
+            main.hgLobbyManager.startGame();
         }
 
         return true;
@@ -69,22 +66,22 @@ public class HGPlayersManager implements Listener, CommandExecutor {
 
     //Check if player has HGPlayer profile
     @EventHandler
-    public void OnPlayerJoin(PlayerJoinEvent event) {
+    public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
 
-        if (FindHGPlayer(player) == null) {
-            AddNewHGPlayer(player);
+        if (findHGPlayer(player) == null) {
+            addNewHGPlayer(player);
         }
 
         player.getInventory().clear();
         player.setGameMode(GameMode.SURVIVAL);
         player.setFoodLevel(20);
         //player.teleport(new Location(Bukkit.getWorld("world"), 742, 100, -910));
-        main.hgLobbyManager.GiveWelcomeBook(FindHGPlayer(player));
+        main.hgLobbyManager.giveWelcomeBook(findHGPlayer(player));
     }
 
     //Find HGPlayer related to player
-    public HGPlayer FindHGPlayer(Player player) {
+    public HGPlayer findHGPlayer(Player player) {
         for (HGPlayer hgPlayer : hgPlayers) {
             if (hgPlayer.player == player) {
                 return hgPlayer;
@@ -93,16 +90,16 @@ public class HGPlayersManager implements Listener, CommandExecutor {
         return null;
     }
 
-    public void AddNewHGPlayer(Player player) {
+    public void addNewHGPlayer(Player player) {
         HGPlayer hgPlayer = new HGPlayer(player, main);
         hgPlayers.add(hgPlayer);
         System.out.println("adding player to HGPlayers");
     }
 
-    public void AssignCurrentPlayers() {
+    public void assignCurrentPlayers() {
         for (Player player : main.getServer().getOnlinePlayers()) {
-            if (FindHGPlayer(player) == null) {
-                AddNewHGPlayer(player);
+            if (findHGPlayer(player) == null) {
+                addNewHGPlayer(player);
             }
         }
     }

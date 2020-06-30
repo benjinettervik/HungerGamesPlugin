@@ -1,19 +1,10 @@
 package com.benjnet.hungergames;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Color;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class HGTeamsManager implements Listener {
@@ -25,12 +16,12 @@ public class HGTeamsManager implements Listener {
         main = _main;
     }
 
-    public void OnCommand(String[] args, HGPlayer senderHgPlayer) {
+    public void onCommand(String[] args, HGPlayer senderHgPlayer) {
         if (args.length > 1) {
 
             if (args[1].equalsIgnoreCase("create")) {
                 if (args.length > 2) {
-                    CreateTeam(args[2], senderHgPlayer);
+                    createTeam(args[2], senderHgPlayer);
 
                 } else {
                     senderHgPlayer.player.sendMessage(ChatColor.RED + "Cannot create team without name.");
@@ -40,15 +31,15 @@ public class HGTeamsManager implements Listener {
             if (senderHgPlayer.team != null) {
 
                 if (args[1].equalsIgnoreCase("info")) {
-                    senderHgPlayer.team.Info(senderHgPlayer);
+                    senderHgPlayer.team.info(senderHgPlayer);
 
                 } else if (args[1].equalsIgnoreCase("invite")) {
 
                     if (args.length > 2) {
 
-                        if ((main.hgPlayersManager.FindHGPlayer(Bukkit.getPlayer(args[2]))) != null) {
-                            HGPlayer invitedHgPlayer = main.hgPlayersManager.FindHGPlayer(Bukkit.getPlayer(args[2]));
-                            senderHgPlayer.team.InvitePlayer(senderHgPlayer, invitedHgPlayer);
+                        if ((main.hgPlayersManager.findHGPlayer(Bukkit.getPlayer(args[2]))) != null) {
+                            HGPlayer invitedHgPlayer = main.hgPlayersManager.findHGPlayer(Bukkit.getPlayer(args[2]));
+                            senderHgPlayer.team.invitePlayer(senderHgPlayer, invitedHgPlayer);
                         } else {
                             senderHgPlayer.player.sendMessage(ChatColor.RED + "Player is not online.");
                         }
@@ -56,7 +47,7 @@ public class HGTeamsManager implements Listener {
                 }
 
                 if (args[1].equalsIgnoreCase("leave")) {
-                    senderHgPlayer.team.RemovePlayer(senderHgPlayer);
+                    senderHgPlayer.team.removePlayer(senderHgPlayer);
                 }
             } else {
                 senderHgPlayer.player.sendMessage(ChatColor.RED + "You are not in a team.");
@@ -64,7 +55,7 @@ public class HGTeamsManager implements Listener {
         }
     }
 
-    void CreateTeam(String name, HGPlayer creator) {
+    void createTeam(String name, HGPlayer creator) {
 
         for (HGTeam hgTeam : hgTeams) {
             if (hgTeam.name.equalsIgnoreCase(name)) {
@@ -74,12 +65,12 @@ public class HGTeamsManager implements Listener {
         }
 
         if (creator.team != null) {
-            creator.team.RemovePlayer(creator);
+            creator.team.removePlayer(creator);
         }
         HGTeam hgTeam = new HGTeam(name, creator, main);
     }
 
-    HGTeam FindHGTeam(String teamName) {
+    HGTeam findHGTeam(String teamName) {
         for (HGTeam hgTeam : hgTeams) {
             if (hgTeam.name.equalsIgnoreCase(teamName)) {
                 return hgTeam;

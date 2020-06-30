@@ -6,11 +6,10 @@ import org.bukkit.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.PluginManager;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -50,18 +49,18 @@ public class HGLobbyManager implements Listener {
         //using Multiverse to create worlds, because its a pain to manually link nether worlds
         core = (MultiverseCore) Bukkit.getServer().getPluginManager().getPlugin("Multiverse-Core");;
 
-        welcomeBook = CreateWelcomeBook();
+        welcomeBook = createWelcomeBook();
     }
 
     @EventHandler
-    void FoodLevelChangeEvent(FoodLevelChangeEvent e) {
+    void foodLevelChangeEvent(FoodLevelChangeEvent e) {
         if (!gameIsStarted) {
             e.setCancelled(true);
         }
     }
 
     @EventHandler
-    void OnBlockBreak(BlockBreakEvent e) {
+    void onBlockBreak(BlockBreakEvent e) {
         if (e.getPlayer() != null) {
             if (e.getPlayer().getGameMode() == GameMode.SURVIVAL && !gameIsStarted) {
                 e.setCancelled(true);
@@ -69,7 +68,14 @@ public class HGLobbyManager implements Listener {
         }
     }
 
-    public void OnCommand(String[] args, HGPlayer senderHgPlayer) {
+    @EventHandler
+    void onPlayerDamage(EntityDamageEvent e){
+        if(!gameIsStarted){
+            e.setCancelled(true);
+        }
+    }
+
+    public void onCommand(String[] args, HGPlayer senderHgPlayer) {
         if (args.length > 1) {
             if (StringUtils.isNumeric(args[1])) {
                 int value = Integer.parseInt(args[1]);
@@ -90,7 +96,7 @@ public class HGLobbyManager implements Listener {
                     main.getServer().broadcastMessage(ChatColor.GREEN + "Radius time has been set to " + value + " blocks");
                 }
 
-                main.hgScoreboardManager.UpdateScoreboardLobby();
+                main.hgScoreboardManager.updateScoreboardLobby();
             }
         } else if (args[0].equalsIgnoreCase("default")) {
             matchTime = 60 * 60;
@@ -101,7 +107,7 @@ public class HGLobbyManager implements Listener {
 
             senderHgPlayer.player.sendMessage(ChatColor.GREEN + "Settings have been set to default.");
 
-            main.hgScoreboardManager.UpdateScoreboardLobby();
+            main.hgScoreboardManager.updateScoreboardLobby();
         }
 
         if (args[0].equalsIgnoreCase("spawn")) {
@@ -110,7 +116,7 @@ public class HGLobbyManager implements Listener {
         }
     }
 
-    public ItemStack CreateWelcomeBook() {
+    public ItemStack createWelcomeBook() {
         ItemStack welcomeBook = new ItemStack(Material.WRITTEN_BOOK);
         BookMeta bookMeta = (BookMeta) welcomeBook.getItemMeta();
         bookMeta.setAuthor("ZweetDreams");
@@ -149,11 +155,11 @@ public class HGLobbyManager implements Listener {
         return welcomeBook;
     }
 
-    public void GiveWelcomeBook(HGPlayer hgPlayer) {
+    public void giveWelcomeBook(HGPlayer hgPlayer) {
         hgPlayer.player.getInventory().addItem(welcomeBook);
     }
 
-    public void StartGame() {
+    public void startGame() {
         List<HGPlayer> hgPlayers = main.hgPlayersManager.hgPlayers;
 
         for (HGPlayer hgPlayer : hgPlayers) {
@@ -184,26 +190,26 @@ public class HGLobbyManager implements Listener {
                     hgMatch = new HGMatch(main, main.hgPlayersManager.hgPlayers, main.hgTeamsManager.hgTeams, hgWorld, roamingTime, invincibilityTime, matchTime, radius, zoneDamageIntensity);
                     gameIsStarted = true;
 
-                    main.hgScoreboardManager.UpdateScoreBoardMatch();
-                    main.hgScoreboardManager.UpdateScoreBoardMatch();
+                    main.hgScoreboardManager.updateScoreBoardMatch();
+                    main.hgScoreboardManager.updateScoreBoardMatch();
                     Bukkit.getServer().getScheduler().cancelTask(countdown.getTaskId());
                 }
             }
         }.runTaskTimer(main.plugin, 0, 20);
     }
 
-    void CancelTask() {
+    void cancelTask() {
         Bukkit.getServer().getScheduler().cancelTask(countdown.getTaskId());
     }
 
-    public void EndGame() {
+    public void endGame() {
         hgMatch = null;
         gameIsStarted = false;
 
         //placeholder
         Bukkit.getServer().reload();
         //
-        main.hgScoreboardManager.UpdateScoreboardLobby();
+        main.hgScoreboardManager.updateScoreboardLobby();
         countdownTimer = 4;
         Bukkit.getScheduler().cancelTasks(main.plugin);
     }

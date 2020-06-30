@@ -25,11 +25,11 @@ public class HGCommandsManager implements CommandExecutor, Listener {
 
         Player sender = (Player) commandSender;
 
-        if (main.hgPlayersManager.FindHGPlayer(sender) == null) {
+        if (main.hgPlayersManager.findHGPlayer(sender) == null) {
             return false;
         }
 
-        HGPlayer senderHgPlayer = main.hgPlayersManager.FindHGPlayer(sender);
+        HGPlayer senderHgPlayer = main.hgPlayersManager.findHGPlayer(sender);
 
         if (main.hgLobbyManager.gameIsStarted) {
             senderHgPlayer.player.sendMessage(ChatColor.RED + "Cannot perform commands when in-game.");
@@ -39,27 +39,24 @@ public class HGCommandsManager implements CommandExecutor, Listener {
         if (command.getName().equalsIgnoreCase("hg")) {
             if (args.length > 0) {
                 if (args[0].equalsIgnoreCase("team")) {
-                    main.hgTeamsManager.OnCommand(args, senderHgPlayer);
+                    main.hgTeamsManager.onCommand(args, senderHgPlayer);
                 } else if (args[0].equalsIgnoreCase("matchtime") || args[0].equalsIgnoreCase("safetime") || args[0].equalsIgnoreCase("roamingtime") || args[0].equalsIgnoreCase("spawn") || args[0].equalsIgnoreCase("radius") || args[0].equalsIgnoreCase("default")) {
-                    main.hgLobbyManager.OnCommand(args, senderHgPlayer);
+                    main.hgLobbyManager.onCommand(args, senderHgPlayer);
                 } else if (args[0].equalsIgnoreCase("scoreboard")) {
-                    main.hgScoreboardManager.OnCommand(args, senderHgPlayer);
+                    main.hgScoreboardManager.onCommand(args, senderHgPlayer);
                 } else if (args[0].equalsIgnoreCase("help")) {
                     if(args.length > 1){
                         if(StringUtils.isNumeric(args[1])){
                             if (args[1].equalsIgnoreCase("1")) {
-                                Help(sender, 1);
+                                help(sender, 1);
                             }
                             else if(args[1].equalsIgnoreCase("2")){
-                                Help(sender, 2);
+                                help(sender, 2);
                             }
                         }
                     }else{
-                        Help(sender, 1);
+                        help(sender, 1);
                     }
-
-                } else if (args[0].equalsIgnoreCase("tp")) {
-                    main.hgWorldCreator.TeleportPlayer();
                 }
             }
         }
@@ -70,7 +67,7 @@ public class HGCommandsManager implements CommandExecutor, Listener {
         return true;
     }
 
-    void Help(Player sender, int page){
+    void help(Player sender, int page){
         if(page == 1){
             sender.sendMessage(ChatColor.GOLD + "Possible commands:");
             sender.sendMessage(ChatColor.GOLD + "Page 1/2");
@@ -94,7 +91,7 @@ public class HGCommandsManager implements CommandExecutor, Listener {
     }
 
     @EventHandler
-    void OnPlayerCommand(PlayerCommandPreprocessEvent e) {
+    void onPlayerCommand(PlayerCommandPreprocessEvent e) {
         //disabling commands i dont want
         if (e.getMessage().equalsIgnoreCase("/help")) {
             e.setCancelled(true);

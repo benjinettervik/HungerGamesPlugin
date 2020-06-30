@@ -28,9 +28,9 @@ public class HGPlayer {
         player.setScoreboard(main.hgScoreboardManager.board);
     }
 
-    public void TeamInviteResponse(boolean accept){
+    public void teamInviteResponse(boolean accept){
         if(accept){
-            pendingInvite.AddPlayer(this);
+            pendingInvite.addPlayer(this);
         }
         else{
             pendingInviter.player.sendMessage(ChatColor.RED + name + " declined your invitation.");
@@ -40,7 +40,7 @@ public class HGPlayer {
         pendingInviter = null;
     }
 
-    public void SetReadyStatus(Boolean _ready){
+    public void setReadyStatus(Boolean _ready){
         ready = _ready;
         if(ready){
             player.sendMessage(ChatColor.GREEN + "You are ready!");
@@ -49,6 +49,6 @@ public class HGPlayer {
             player.sendMessage(ChatColor.RED + "You are no longer ready.");
         }
 
-        main.hgScoreboardManager.UpdateScoreboardLobby();
+        main.hgScoreboardManager.updateScoreboardLobby();
     }
 }
