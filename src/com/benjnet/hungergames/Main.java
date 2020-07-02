@@ -16,6 +16,7 @@ public class Main extends JavaPlugin {
     public HGCommandsManager hgCommandsManager = new HGCommandsManager(this);
     public HGLobbyManager hgLobbyManager = new HGLobbyManager(this);
     public PluginConfig pluginConfig = new PluginConfig(this);
+    public HGWorldManager hgWorldManager = new HGWorldManager(this);
 
     @Override
     public void onEnable() {
@@ -41,6 +42,6 @@ public class Main extends JavaPlugin {
 
     @Override
     public void onDisable(){
-
+        hgWorldManager.deleteHGWorlds();
     }
 }

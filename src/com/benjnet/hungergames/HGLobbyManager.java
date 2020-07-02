@@ -32,6 +32,7 @@ public class HGLobbyManager implements Listener {
     public int roamingTime = 1 * 60;
     public int radius = 50;
     public int zoneDamageIntensity = 1;
+    int waitTime = 0;
     int countdownTimer = 4;
 
     HGMatch hgMatch;
@@ -45,12 +46,13 @@ public class HGLobbyManager implements Listener {
     }
 
     BukkitTask countdown;
+    BukkitTask waitForWorldCreation;
 
     public HGLobbyManager(Main _main) {
         main = _main;
 
         //using Multiverse to create worlds, because its a pain to manually link nether worlds
-        core = (MultiverseCore) Bukkit.getServer().getPluginManager().getPlugin("Multiverse-Core");
+
 
         welcomeBook = createWelcomeBook();
     }
@@ -179,36 +181,20 @@ public class HGLobbyManager implements Listener {
 
         Bukkit.broadcastMessage(ChatColor.GREEN + "Generating world...");
 
-        Random rand = new Random();
-        String worldName = "HGWorld" + rand.nextInt(10000);
-
-        core.getMVWorldManager().addWorld(worldName, World.Environment.NORMAL, null, WorldType.NORMAL, false, null, false);
-        core.getMVWorldManager().addWorld(worldName + "_nether", World.Environment.NETHER, null, WorldType.NORMAL, false, null, false);
+        String worldName = main.hgWorldManager.createHGWorld();
 
         World hgWorld = Bukkit.getWorld(worldName);
 
-        countdown = new BukkitRunnable() {
+        //pretty ugly solution for now but whatever
+        waitForWorldCreation = new BukkitRunnable() {
             @Override
             public void run() {
-                countdownTimer--;
-
-                Bukkit.getServer().broadcastMessage(ChatColor.GREEN + "" + ChatColor.BOLD + "Starting game in " + countdownTimer + " seconds!");
-
-                if (countdownTimer <= 0) {
-
-                    hgMatch = new HGMatch(main, main.hgPlayersManager.hgPlayers, main.hgTeamsManager.hgTeams, hgWorld, roamingTime, invincibilityTime, matchTime, radius, zoneDamageIntensity);
-                    gameIsStarted = true;
-
-                    main.hgScoreboardManager.updateScoreBoardMatch();
-                    main.hgScoreboardManager.updateScoreBoardMatch();
-                    Bukkit.getServer().getScheduler().cancelTask(countdown.getTaskId());
+                waitTime++;
+                if(waitTime > 10){
+                    startRunnable(hgWorld);
                 }
             }
         }.runTaskTimer(main.plugin, 0, 20);
-    }
-
-    void cancelTask() {
-        Bukkit.getServer().getScheduler().cancelTask(countdown.getTaskId());
     }
 
     public void endGame() {
@@ -234,5 +220,28 @@ public class HGLobbyManager implements Listener {
                     (float)main.pluginConfig.config.getDouble("spawn.pitch")
             ));
         }
+    }
+
+    //apparently bukkit doesnt like creating runnables inside runnables : )
+    void startRunnable(World hgWorld){
+        countdown = new BukkitRunnable() {
+            @Override
+            public void run() {
+                countdownTimer--;
+
+                Bukkit.getServer().broadcastMessage(ChatColor.GREEN + "" + ChatColor.BOLD + "Starting game in " + countdownTimer + " seconds!");
+
+                if (countdownTimer <= 0) {
+
+                    hgMatch = new HGMatch(main, main.hgPlayersManager.hgPlayers, main.hgTeamsManager.hgTeams, hgWorld, roamingTime, invincibilityTime, matchTime, radius, zoneDamageIntensity);
+                    gameIsStarted = true;
+
+                    main.hgScoreboardManager.updateScoreBoardMatch();
+                    Bukkit.getServer().getScheduler().cancelTask(countdown.getTaskId());
+                }
+            }
+        }.runTaskTimer(main.plugin, 0, 20);
+
+        Bukkit.getServer().getScheduler().cancelTask(waitForWorldCreation.getTaskId());
     }
 }
