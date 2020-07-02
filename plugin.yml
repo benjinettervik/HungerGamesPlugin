@@ -3,20 +3,20 @@ name: HungerGames
 version: "1.0"
 depend: [Multiverse-Core, Multiverse-NetherPortals]
 api-version: "1.15"
+author: zweetdreams
 
 commands:
   hg:
-    description: type /hg help
-    usage: /hg help
+    description: /hg help
   a:
     description: accept team invite
-    usage: /a test
+    usage: lobby
   d:
     description: decline team invite
-    usage: /d test
+    usage: lobby
   scoreboard:
     description: toggle scoreboard
-    usage: /scoreboard
+    usage: misc
   ready:
-    description: ready
-    usage: /ready
+    description: ready up for HG
+    usage: lobby

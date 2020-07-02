@@ -9,12 +9,21 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.bukkit.plugin.PluginDescriptionFile;
+
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.Set;
 
 public class HGCommandsManager implements CommandExecutor, Listener {
     Main main;
+    String[] commands = new String[]{"matchtime", "safetime", "roamingtime", "spawn", "setspawn", "radius", "default"};
 
     public HGCommandsManager(Main _main) {
         main = _main;
+
+        //commands =
     }
 
     @Override
@@ -40,7 +49,7 @@ public class HGCommandsManager implements CommandExecutor, Listener {
             if (args.length > 0) {
                 if (args[0].equalsIgnoreCase("team")) {
                     main.hgTeamsManager.onCommand(args, senderHgPlayer);
-                } else if (args[0].equalsIgnoreCase("matchtime") || args[0].equalsIgnoreCase("safetime") || args[0].equalsIgnoreCase("roamingtime") || args[0].equalsIgnoreCase("spawn") || args[0].equalsIgnoreCase("radius") || args[0].equalsIgnoreCase("default")) {
+                } else if (checkIfCommand(args[0], commands)){
                     main.hgLobbyManager.onCommand(args, senderHgPlayer);
                 } else if (args[0].equalsIgnoreCase("scoreboard")) {
                     main.hgScoreboardManager.onCommand(args, senderHgPlayer);
@@ -59,10 +68,6 @@ public class HGCommandsManager implements CommandExecutor, Listener {
                     }
                 }
             }
-        }
-
-        if (command.getName().equalsIgnoreCase("help")) {
-            return false;
         }
         return true;
     }
@@ -93,11 +98,20 @@ public class HGCommandsManager implements CommandExecutor, Listener {
     @EventHandler
     void onPlayerCommand(PlayerCommandPreprocessEvent e) {
         //disabling commands i dont want
-        if (e.getMessage().equalsIgnoreCase("/help")) {
+        if (e.getMessage().toLowerCase().contains("/help")) {
             e.setCancelled(true);
             e.getPlayer().sendMessage(ChatColor.GOLD + "Available plugins: \nHunger Games: /hg help");
         } else if (e.getMessage().toLowerCase().contains("mv")) {
             e.setCancelled(true);
         }
+    }
+
+    boolean checkIfCommand(String command, String[] compareCommands){
+        for(String cmd : compareCommands){
+            if(cmd.equalsIgnoreCase(command)){
+                return true;
+            }
+        }
+        return false;
     }
 }
