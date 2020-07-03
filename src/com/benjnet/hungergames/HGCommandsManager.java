@@ -28,6 +28,13 @@ public class HGCommandsManager implements CommandExecutor, Listener {
 
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] args) {
+        if(command.getName().equalsIgnoreCase("hg")){
+            if(args[0].equalsIgnoreCase("s")){
+                System.out.println(main.hgPlayersManager.hgPlayers.size());
+                System.out.println(main.hgTeamsManager.hgTeams.size());
+            }
+        }
+
         if (!(commandSender instanceof Player)) {
             return false;
         }

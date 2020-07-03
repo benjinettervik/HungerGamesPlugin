@@ -4,7 +4,6 @@ import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 public class HGPlayer {
-
     Main main;
 
     Boolean isInGame = false;

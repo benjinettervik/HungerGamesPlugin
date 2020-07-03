@@ -9,6 +9,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,7 +54,7 @@ public class HGPlayersManager implements Listener, CommandExecutor {
         }
 
         if (command.getName().equalsIgnoreCase("ready")) {
-            if(senderHgPlayer.team == null){
+            if (senderHgPlayer.team == null) {
                 senderHgPlayer.player.sendMessage(ChatColor.RED + "You must be in a team to ready up.");
                 return true;
             }
@@ -66,8 +67,8 @@ public class HGPlayersManager implements Listener, CommandExecutor {
 
     //Check if player has HGPlayer profile
     @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent event) {
-        Player player = event.getPlayer();
+    public void onPlayerJoin(PlayerJoinEvent e) {
+        Player player = e.getPlayer();
 
         if (findHGPlayer(player) == null) {
             addNewHGPlayer(player);
@@ -78,6 +79,23 @@ public class HGPlayersManager implements Listener, CommandExecutor {
         player.setFoodLevel(20);
         main.hgLobbyManager.teleportToSpawn(player);
         main.hgLobbyManager.giveWelcomeBook(findHGPlayer(player));
+    }
+
+    @EventHandler
+    public void onPlayerLeave(PlayerQuitEvent e) {
+        HGPlayer hgPlayer = findHGPlayer(e.getPlayer());
+        if(hgPlayer.team != null){
+            hgPlayer.team.removePlayer(hgPlayer);
+        }
+
+        int index = 0;
+        for (HGPlayer hgPlayerInArray : hgPlayers) {
+            if (hgPlayerInArray.name.equals(hgPlayer.name)) {
+                hgPlayers.remove(index);
+                break;
+            }
+            index++;
+        }
     }
 
     //Find HGPlayer related to player

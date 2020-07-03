@@ -1,6 +1,7 @@
 package com.benjnet.hungergames;
 
 import org.bukkit.ChatColor;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -20,10 +21,6 @@ public class Main extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        //Classes
-
-        getLogger().info(ChatColor.GREEN + "Enabling Hunger Games");
-        //Register commands
         getCommand("hg").setExecutor(hgCommandsManager);
         getCommand("ready").setExecutor(hgPlayersManager);
         getCommand("a").setExecutor(hgPlayersManager);
@@ -31,12 +28,12 @@ public class Main extends JavaPlugin {
 
         plugin = pm.getPlugin("HungerGames");
 
-        //Register events
         pm.registerEvents(hgPlayersManager, this);
         pm.registerEvents(hgLobbyManager, this);
         pm.registerEvents(hgCommandsManager, this);
 
         hgScoreboardManager.setupScoreboard();
+
         hgPlayersManager.assignCurrentPlayers();
     }
 

@@ -31,7 +31,6 @@ public class HGTeam {
     }
 
     public void addPlayer(HGPlayer hgPlayer) {
-
         for (HGPlayer hgPlayerInTeam : hgPlayersInTeam) {
             hgPlayerInTeam.player.sendMessage("" + ChatColor.AQUA + ChatColor.BOLD + hgPlayer.name + ChatColor.GREEN + " has joined your team!");
         }
@@ -47,7 +46,14 @@ public class HGTeam {
     }
 
     public void removePlayer(HGPlayer hgPlayer) {
-        hgPlayersInTeam.remove(hgPlayer);
+        int index = 0;
+        for(HGPlayer hgPlayerInTeam : hgPlayersInTeam){
+            if(hgPlayerInTeam.equals(hgPlayer)){
+                hgPlayersInTeam.remove(index);
+                break;
+            }
+            index++;
+        }
         hgPlayer.team = null;
         hgPlayer.player.sendMessage(ChatColor.RED + "You have left " + ChatColor.AQUA + ChatColor.BOLD + name + ChatColor.RED + ".");
 

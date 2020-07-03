@@ -12,6 +12,7 @@ import org.bukkit.event.block.BlockFromToEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.FireworkMeta;
@@ -139,6 +140,13 @@ public class HGMatch implements Listener {
             if (e.getDamager() instanceof Player && e.getEntity() instanceof Player) {
                 e.setCancelled(true);
             }
+        }
+    }
+
+    @EventHandler
+    void onFoodEat(FoodLevelChangeEvent e){
+        if(matchStage == HGLobbyManager.Stage.ROAMING){
+            e.setCancelled(true);
         }
     }
 
@@ -296,6 +304,7 @@ public class HGMatch implements Listener {
             Location spawnLocation = worldSpawnLocation.clone();
             spawnLocation.add(0, 5, 0);
             hgPlayer.player.setHealth(20);
+            hgPlayer.player.setFoodLevel(20);
             hgPlayer.player.teleport(worldSpawnLocation.add(0, 3, 0));
         }
 

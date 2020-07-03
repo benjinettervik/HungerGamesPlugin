@@ -56,7 +56,6 @@ public class HGTeamsManager implements Listener {
     }
 
     void createTeam(String name, HGPlayer creator) {
-
         for (HGTeam hgTeam : hgTeams) {
             if (hgTeam.name.equalsIgnoreCase(name)) {
                 creator.player.sendMessage("" + ChatColor.BOLD + ChatColor.RED + name + " already exists!");
